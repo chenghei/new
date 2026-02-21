@@ -1,6 +1,6 @@
 import api from './index'
 
-// 获取分类列表（支持排序）1212121212
+// 获取分类列表（支持排序）
 export const getCategories = async (params = {}) => {
   return await api.get('/categories', { params })
 }
