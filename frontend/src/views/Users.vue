@@ -22,14 +22,15 @@
             </el-col>
             <el-col :span="4">
               <el-select
-                v-model="searchForm.role"
-                placeholder="角色筛选"
-                clearable
-                @change="handleSearch"
-              >
-                <el-option label="管理员" value="admin" />
-                <el-option label="普通用户" value="user" />
-              </el-select>
+              v-model="searchForm.role"
+              placeholder="角色筛选"
+              clearable
+              @change="handleSearch"
+            >
+              <el-option label="管理员" value="admin" />
+              <el-option label="商户" value="merchant" />
+              <el-option label="普通用户" value="user" />
+            </el-select>
             </el-col>
             <el-col :span="4">
               <el-button type="primary" @click="handleSearch">
@@ -64,8 +65,8 @@
 
           <el-table-column label="角色">
             <template #default="{ row }">
-              <el-tag :type="row.role === 'admin' ? 'danger' : 'primary'">
-                {{ row.role === "admin" ? "管理员" : "普通用户" }}
+              <el-tag :type="getRoleType(row.role)">
+                {{ getRoleName(row.role) }}
               </el-tag>
             </template>
           </el-table-column>
@@ -78,17 +79,25 @@
             </template>
           </el-table-column>
 
-          <el-table-column label="注册时间">
+          <el-table-column label="创建时间">
             <template #default="{ row }">
               {{ formatDate(row.created_at) }}
             </template>
           </el-table-column>
 
-          <el-table-column label="操作" fixed="right" width="200">
+          <el-table-column label="操作" fixed="right" width="280">
             <template #default="{ row }">
               <el-space>
                 <el-button size="small" @click="viewUser(row)">
                   查看
+                </el-button>
+                <el-button
+                  v-if="userStore.isAdmin && row.id !== userStore.userInfo?.id"
+                  size="small"
+                  type="primary"
+                  @click="showChangeRoleDialog(row)"
+                >
+                  修改角色
                 </el-button>
                 <el-button
                   v-if="row.id !== userStore.userInfo?.id"
@@ -110,6 +119,33 @@
             </template>
           </el-table-column>
         </el-table>
+
+        <!-- 修改角色对话框 -->
+        <el-dialog v-model="roleDialogVisible" title="修改用户角色" width="400px">
+          <el-form :model="roleForm" :rules="roleRules" ref="roleFormRef" label-width="100px">
+            <el-form-item label="用户名" prop="username">
+              <el-input v-model="roleForm.username" disabled />
+            </el-form-item>
+            <el-form-item label="当前角色" prop="currentRole">
+              <el-tag :type="getRoleType(roleForm.currentRole)">
+                {{ getRoleName(roleForm.currentRole) }}
+              </el-tag>
+            </el-form-item>
+            <el-form-item label="新角色" prop="newRole">
+              <el-select v-model="roleForm.newRole" placeholder="请选择新角色">
+                <el-option label="管理员" value="admin" />
+                <el-option label="商户" value="merchant" />
+                <el-option label="普通用户" value="user" />
+              </el-select>
+            </el-form-item>
+          </el-form>
+          <template #footer>
+            <span class="dialog-footer">
+              <el-button @click="roleDialogVisible = false">取消</el-button>
+              <el-button type="primary" @click="changeRole">确定</el-button>
+            </span>
+          </template>
+        </el-dialog>
 
         <!-- 分页 -->
         <div class="pagination">
@@ -143,9 +179,9 @@
           <div class="detail-item">
             <span class="label">角色：</span>
             <el-tag
-              :type="selectedUser.role === 'admin' ? 'danger' : 'primary'"
+              :type="getRoleType(selectedUser.role)"
             >
-              {{ selectedUser.role === "admin" ? "管理员" : "普通用户" }}
+              {{ getRoleName(selectedUser.role) }}
             </el-tag>
           </div>
           <div class="detail-item">
@@ -178,6 +214,7 @@ import {
   getUsers,
   deleteUser as deleteUserApi,
   toggleUserStatus,
+  updateUser
 } from "@/api/user";
 import Layout from "@/components/Layout.vue";
 
@@ -186,6 +223,8 @@ const userStore = useUserStore();
 const loading = ref(false);
 const dialogVisible = ref(false);
 const selectedUser = ref(null);
+const roleDialogVisible = ref(false);
+const roleFormRef = ref(null);
 
 const users = ref([]);
 
@@ -200,9 +239,78 @@ const pagination = reactive({
   total: 0,
 });
 
+const roleForm = reactive({
+  userId: null,
+  username: "",
+  currentRole: "",
+  newRole: ""
+});
+
+const roleRules = reactive({
+  newRole: [
+    { required: true, message: "请选择新角色", trigger: "change" }
+  ]
+});
+
 const formatDate = (dateString) => {
   if (!dateString) return "";
   return new Date(dateString).toLocaleString();
+};
+
+// 根据角色值获取角色名称
+const getRoleName = (role) => {
+  switch (role) {
+    case "admin":
+      return "管理员";
+    case "merchant":
+      return "商户";
+    case "user":
+      return "普通用户";
+    default:
+      return "未知角色";
+  }
+};
+
+// 根据角色值获取角色标签类型
+const getRoleType = (role) => {
+  switch (role) {
+    case "admin":
+      return "danger";
+    case "merchant":
+      return "warning";
+    case "user":
+      return "primary";
+    default:
+      return "info";
+  }
+};
+
+// 显示修改角色对话框
+const showChangeRoleDialog = (user) => {
+  roleForm.userId = user.id;
+  roleForm.username = user.username;
+  roleForm.currentRole = user.role;
+  roleForm.newRole = user.role;
+  roleDialogVisible.value = true;
+};
+
+// 提交角色修改
+const changeRole = async () => {
+  if (!roleFormRef.value) return;
+
+  roleFormRef.value.validate(async (valid) => {
+    if (valid) {
+      try {
+        await updateUser(roleForm.userId, { role: roleForm.newRole });
+        ElMessage.success("角色修改成功");
+        roleDialogVisible.value = false;
+        loadUsers();
+      } catch (error) {
+        console.error("角色修改失败:", error);
+        ElMessage.error("角色修改失败");
+      }
+    }
+  });
 };
 
 const loadUsers = async () => {

@@ -103,7 +103,7 @@ const startServer = async () => {
     await testConnection();
     
     // 同步数据库模型
-    await sequelize.sync({ force: false });
+    await sequelize.sync({ alter: true });
     console.log('数据库模型同步成功');
     
     // 启动服务器

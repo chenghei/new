@@ -58,14 +58,22 @@ const updateUserSchema = Joi.object({
   nickname: Joi.string()
     .max(50)
     .optional()
+    .allow(null, '')
     .messages({
       'string.max': '昵称最多50个字符'
     }),
   avatar: Joi.string()
     .uri()
     .optional()
+    .allow(null, '')
     .messages({
       'string.uri': '头像必须是有效的URL'
+    }),
+  role: Joi.string()
+    .valid('admin', 'merchant', 'user')
+    .optional()
+    .messages({
+      'any.only': '角色必须是admin、merchant或user'
     })
 });
 

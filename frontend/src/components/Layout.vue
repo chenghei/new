@@ -3,7 +3,7 @@
     <!-- 头部导航 -->
     <el-header class="layout-header">
       <div class="header-left">
-        <h1 class="logo">全栈开发模板</h1>
+        <h1 class="logo">一个有特色的商城</h1>
       </div>
       <div class="header-right">
         <el-space>
@@ -56,10 +56,10 @@
             <el-icon><Menu /></el-icon>
             <span>分类管理</span>
           </el-menu-item>
-          <el-menu-item v-if="userStore.isAdmin" index="/products">
-            <el-icon><Goods /></el-icon>
-            <span>商品管理</span>
-          </el-menu-item>
+          <el-menu-item v-if="userStore.isAdmin || userStore.user?.role === 'merchant'" index="/products">
+          <el-icon><Goods /></el-icon>
+          <span>商品管理</span>
+        </el-menu-item>
         </el-menu>
       </el-aside>
 

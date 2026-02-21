@@ -18,7 +18,7 @@
         <!-- 搜索和排序 -->
         <div class="search-bar">
           <el-row :gutter="20">
-            <el-col :span="8">
+            <el-col :span="7">
               <el-input
                 v-model="searchForm.name"
                 placeholder="搜索商品名称"
@@ -28,7 +28,7 @@
                 @keyup.enter="handleSearch"
               />
             </el-col>
-            <el-col :span="6">
+            <el-col :span="5">
               <el-select
                 v-model="searchForm.category_id"
                 placeholder="选择分类"
@@ -43,6 +43,21 @@
                 />
               </el-select>
             </el-col>
+            <el-col v-if="userStore.isAdmin" :span="5">
+              <el-select
+                v-model="searchForm.merchant_id"
+                placeholder="选择商户"
+                clearable
+                @change="handleSearch"
+              >
+                <el-option
+                  v-for="merchant in merchants"
+                  :key="merchant.id"
+                  :label="merchant.nickname || merchant.username"
+                  :value="merchant.id"
+                />
+              </el-select>
+            </el-col>
             <el-col :span="4">
               <el-select
                 v-model="searchForm.sortBy"
@@ -54,7 +69,7 @@
                 <el-option label="价格" value="price" />
               </el-select>
             </el-col>
-            <el-col :span="4">
+            <el-col :span="3">
               <el-select
                 v-model="searchForm.order"
                 placeholder="排序方式"
@@ -93,6 +108,11 @@
           <el-table-column label="分类">
             <template #default="{ row }">
               {{ row.category?.name || "-" }}
+            </template>
+          </el-table-column>
+          <el-table-column label="所属商家">
+            <template #default="{ row }">
+              {{ row.merchant?.nickname || row.merchant?.username || "-" }}
             </template>
           </el-table-column>
           <el-table-column prop="price" label="价格">
@@ -157,13 +177,19 @@
         :title="dialogType === 'add' ? '新增商品' : '编辑商品'"
         width="600px"
       >
-        <el-form :model="form" :rules="rules" ref="formRef" label-width="100px">
+        <el-form
+          :model="form"
+          :rules="rules"
+          ref="formRef"
+          label-width="100px"
+        >
           <el-form-item label="商品名称" prop="name">
             <el-input v-model="form.name" placeholder="请输入商品名称" />
           </el-form-item>
           <el-form-item label="商品图片">
             <el-upload
               class="upload-demo"
+              action="#"
               :on-preview="handlePreview"
               :on-remove="handleRemove"
               :before-remove="beforeRemove"
@@ -189,8 +215,11 @@
             />
           </el-form-item>
           <el-form-item label="商品价格" prop="price">
-            <el-input
+            <el-input-number
               v-model="form.price"
+              :min="0"
+              :step="0.01"
+              :precision="2"
               placeholder="请输入商品价格"
               style="width: 100%"
             />
@@ -205,10 +234,20 @@
               />
             </el-select>
           </el-form-item>
+          <el-form-item v-if="userStore.isAdmin" label="所属商户" prop="user_id">
+            <el-select v-model="form.user_id" placeholder="请选择商户">
+              <el-option
+                v-for="merchant in merchants"
+                :key="merchant.id"
+                :label="merchant.nickname || merchant.username"
+                :value="merchant.id"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="商品状态" prop="status">
             <el-radio-group v-model="form.status">
-              <el-radio value="active">上架</el-radio>
-              <el-radio value="inactive">下架</el-radio>
+              <el-radio :value="'active'">上架</el-radio>
+              <el-radio :value="'inactive'">下架</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-form>
@@ -235,6 +274,7 @@ import {
   uploadImg,
 } from "@/api/product";
 import { getCategories } from "@/api/category";
+import { getUsers } from "@/api/user";
 import Layout from "@/components/Layout.vue";
 
 const userStore = useUserStore();
@@ -247,10 +287,12 @@ const currentProductId = ref(null);
 
 const products = ref([]);
 const categories = ref([]);
+const merchants = ref([]);
 
 const searchForm = reactive({
   name: "",
   category_id: "",
+  merchant_id: "",
   sortBy: "created_at",
   order: "desc",
 });
@@ -267,6 +309,7 @@ const form = reactive({
   price: 0,
   category_id: "",
   status: "active",
+  user_id: "",
 });
 
 const fileList = ref([]);
@@ -299,7 +342,16 @@ const loadCategories = async () => {
     console.error("加载分类失败:", error);
   }
 };
-// 加载商品列表1
+
+const loadMerchants = async () => {
+  try {
+    const response = await getUsers({ role: 'merchant' });
+    merchants.value = response.data.users;
+  } catch (error) {
+    console.error("加载商户列表失败:", error);
+  }
+};
+// 加载商品列表
 const loadProducts = async () => {
   loading.value = true;
 
@@ -312,6 +364,11 @@ const loadProducts = async () => {
       sortBy: searchForm.sortBy,
       order: searchForm.order,
     };
+
+    // 如果是管理员，添加merchant_id参数
+    if (userStore.isAdmin && searchForm.merchant_id) {
+      params.merchant_id = searchForm.merchant_id;
+    }
 
     const response = await getProducts(params);
     const { products: productList, pagination: paginationData } = response.data;
@@ -356,6 +413,7 @@ const showEditDialog = (product) => {
   form.price = product.price;
   form.category_id = product.category_id;
   form.status = product.status;
+  form.user_id = product.user_id;
   dialogVisible.value = true;
 };
 
@@ -365,6 +423,7 @@ const resetForm = () => {
   form.price = 0;
   form.category_id = "";
   form.status = "active";
+  form.user_id = "";
   fileList.value = [];
   if (formRef.value) {
     formRef.value.resetFields();
@@ -398,11 +457,19 @@ const handleSubmit = async () => {
   await formRef.value.validate(async (valid) => {
     if (valid) {
       try {
+        // 构建提交数据
+        const submitData = { ...form };
+        
+        // 如果不是管理员，移除user_id字段
+        if (!userStore.isAdmin) {
+          delete submitData.user_id;
+        }
+        
         if (dialogType.value === "add") {
-          await createProduct(form);
+          await createProduct(submitData);
           ElMessage.success("商品创建成功");
         } else {
-          await updateProduct(currentProductId.value, form);
+          await updateProduct(currentProductId.value, submitData);
           ElMessage.success("商品更新成功");
         }
         dialogVisible.value = false;
@@ -462,9 +529,12 @@ const deleteProduct = async (product) => {
   }
 };
 
-onMounted(() => {
-  loadCategories();
-  loadProducts();
+onMounted(async () => {
+  await loadCategories();
+  if (userStore.isAdmin) {
+    await loadMerchants();
+  }
+  await loadProducts();
 });
 </script>
 

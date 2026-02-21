@@ -3,24 +3,25 @@ const router = express.Router();
 const productController = require("../controllers/productController");
 const upload = require("../utils/upload");
 const { success, error, notFound } = require('../utils/response');
+const { authenticateToken } = require('../middleware/auth');
 
 // 获取所有商品（支持分页、分类和名称查询）
-router.get("/", productController.getProducts);
+router.get("/", authenticateToken, productController.getProducts);
 
 // 获取单个商品
-router.get("/:id", productController.getProductById);
+router.get("/:id", authenticateToken, productController.getProductById);
 
 // 创建商品
-router.post("/", productController.createProduct);
+router.post("/", authenticateToken, productController.createProduct);
 
 // 更新商品
-router.put("/:id", productController.updateProduct);
+router.put("/:id", authenticateToken, productController.updateProduct);
 
 // 删除商品
-router.delete("/:id", productController.deleteProduct);
+router.delete("/:id", authenticateToken, productController.deleteProduct);
 
 // 上传图片
-router.post("/upload", upload.single("file"), async (req, res) => {
+router.post("/upload", authenticateToken, upload.single("file"), async (req, res) => {
   try {
     const file = req.file;
     return success(res, file.filename, '上传成功');

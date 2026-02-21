@@ -75,10 +75,9 @@ const updateUser = async (req, res) => {
   try {
     const { id } = req.params;
     
-    // 验证请求数据
-    const { isValid, errors, value } = validate(updateUserSchema, req.body);
-    if (!isValid) {
-      return error(res, '数据验证失败', 400, errors);
+    // 检查权限：只能修改自己的信息，或者管理员可以修改所有用户信息
+    if (req.user.id !== parseInt(id) && req.user.role !== 'admin') {
+      return error(res, '权限不足', 403);
     }
 
     const user = await User.findByPk(id);
@@ -86,12 +85,25 @@ const updateUser = async (req, res) => {
       return notFound(res, '用户不存在');
     }
 
-    // 检查权限：只能修改自己的信息，或者管理员可以修改所有用户信息
-    if (req.user.id !== parseInt(id) && req.user.role !== 'admin') {
-      return error(res, '权限不足', 403);
+    // 构建更新对象
+    const updateData = {};
+    
+    // 只允许修改指定的字段
+    if (req.body.nickname !== undefined) {
+      updateData.nickname = req.body.nickname;
     }
-
-    await user.update(value);
+    
+    if (req.body.avatar !== undefined) {
+      updateData.avatar = req.body.avatar;
+    }
+    
+    // 只有管理员可以修改角色
+    if (req.user.role === 'admin' && req.body.role !== undefined) {
+      updateData.role = req.body.role;
+    }
+    
+    // 更新用户信息
+    await user.update(updateData);
 
     return success(res, {
       user: user.toSafeJSON()

@@ -44,11 +44,11 @@ const routes = [
     meta: { requiresAuth: true, requiresAdmin: true }
   },
   {
-    path: '/products',
-    name: 'Products',
-    component: () => import('@/views/Products.vue'),
-    meta: { requiresAuth: true, requiresAdmin: true }
-  },
+      path: '/products',
+      name: 'Products',
+      component: () => import('@/views/Products.vue'),
+      meta: { requiresAuth: true, requiresAdmin: false }
+    },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',

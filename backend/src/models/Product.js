@@ -1,6 +1,7 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/database');
 const Category = require('./Category');
+const User = require('./User');
 
 const Product = sequelize.define('Product', {
   id: {
@@ -40,6 +41,16 @@ const Product = sequelize.define('Product', {
     },
     onUpdate: 'CASCADE',
     onDelete: 'RESTRICT'
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: User,
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'RESTRICT'
   }
 }, {
   tableName: 'products',
@@ -56,6 +67,16 @@ Product.belongsTo(Category, {
 
 Category.hasMany(Product, {
   foreignKey: 'category_id',
+  as: 'products'
+});
+
+Product.belongsTo(User, {
+  foreignKey: 'user_id',
+  as: 'merchant'
+});
+
+User.hasMany(Product, {
+  foreignKey: 'user_id',
   as: 'products'
 });
 
