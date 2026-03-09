@@ -50,14 +50,26 @@
               </el-form-item>
 
               <el-form-item label="角色">
-                <el-tag :type="profileForm.role === 'admin' ? 'danger' : 'primary'">
-                  {{ profileForm.role === 'admin' ? '管理员' : '普通用户' }}
+                <el-tag
+                  :type="
+                    profileForm.role === 'admin'
+                      ? 'danger'
+                      : profileForm.role === 'merchant'
+                      ? 'warning'
+                      : 'primary'
+                  "
+                >
+                  {{ roleName[profileForm.role] }}
                 </el-tag>
               </el-form-item>
 
               <el-form-item label="状态">
-                <el-tag :type="profileForm.status === 'active' ? 'success' : 'warning'">
-                  {{ profileForm.status === 'active' ? '正常' : '禁用' }}
+                <el-tag
+                  :type="
+                    profileForm.status === 'active' ? 'success' : 'warning'
+                  "
+                >
+                  {{ profileForm.status === "active" ? "正常" : "禁用" }}
                 </el-tag>
               </el-form-item>
 
@@ -66,7 +78,11 @@
               </el-form-item>
 
               <el-form-item v-if="isEditing">
-                <el-button type="primary" :loading="loading" @click="saveProfile">
+                <el-button
+                  type="primary"
+                  :loading="loading"
+                  @click="saveProfile"
+                >
                   保存
                 </el-button>
                 <el-button @click="cancelEdit">取消</el-button>
@@ -117,7 +133,11 @@
               </el-form-item>
 
               <el-form-item>
-                <el-button type="primary" :loading="passwordLoading" @click="changePassword">
+                <el-button
+                  type="primary"
+                  :loading="passwordLoading"
+                  @click="changePassword"
+                >
                   修改密码
                 </el-button>
               </el-form-item>
@@ -130,148 +150,147 @@
 </template>
 
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
-import { useUserStore } from '@/store/user'
-import { updateUser, updatePassword } from '@/api/user'
-import Layout from '@/components/Layout.vue'
+import { reactive, ref, onMounted } from "vue";
+import { ElMessage } from "element-plus";
+import { useUserStore } from "@/store/user";
+import { updateUser, updatePassword } from "@/api/user";
+import Layout from "@/components/Layout.vue";
 
-const userStore = useUserStore()
+const userStore = useUserStore();
+const roleName = {
+  admin: "管理员",
+  merchant: "商户",
+  user: "普通用户",
+};
 
-const profileFormRef = ref()
-const passwordFormRef = ref()
-const loading = ref(false)
-const passwordLoading = ref(false)
-const isEditing = ref(false)
+const profileFormRef = ref();
+const passwordFormRef = ref();
+const loading = ref(false);
+const passwordLoading = ref(false);
+const isEditing = ref(false);
 
 const profileForm = reactive({
-  username: '',
-  email: '',
-  nickname: '',
-  avatar: '',
-  role: '',
-  status: '',
-  created_at: ''
-})
+  username: "",
+  email: "",
+  nickname: "",
+  avatar: "",
+  role: "",
+  status: "",
+  created_at: "",
+});
 
-const originalProfile = reactive({})
+const originalProfile = reactive({});
 
 const passwordForm = reactive({
-  oldPassword: '',
-  newPassword: '',
-  confirmPassword: ''
-})
+  oldPassword: "",
+  newPassword: "",
+  confirmPassword: "",
+});
 
 const profileRules = {
-  nickname: [
-    { max: 50, message: '昵称最多50个字符', trigger: 'blur' }
-  ],
-  avatar: [
-    { type: 'url', message: '请输入正确的URL格式', trigger: 'blur' }
-  ]
-}
+  nickname: [{ max: 50, message: "昵称最多50个字符", trigger: "blur" }],
+  avatar: [{ type: "url", message: "请输入正确的URL格式", trigger: "blur" }],
+};
 
 const validateConfirmPassword = (rule, value, callback) => {
   if (value !== passwordForm.newPassword) {
-    callback(new Error('两次输入的密码不一致'))
+    callback(new Error("两次输入的密码不一致"));
   } else {
-    callback()
+    callback();
   }
-}
+};
 
 const passwordRules = {
-  oldPassword: [
-    { required: true, message: '请输入当前密码', trigger: 'blur' }
-  ],
+  oldPassword: [{ required: true, message: "请输入当前密码", trigger: "blur" }],
   newPassword: [
-    { required: true, message: '请输入新密码', trigger: 'blur' },
-    { min: 6, max: 50, message: '密码长度应在6-50个字符', trigger: 'blur' }
+    { required: true, message: "请输入新密码", trigger: "blur" },
+    { min: 6, max: 50, message: "密码长度应在6-50个字符", trigger: "blur" },
   ],
   confirmPassword: [
-    { required: true, message: '请确认新密码', trigger: 'blur' },
-    { validator: validateConfirmPassword, trigger: 'blur' }
-  ]
-}
+    { required: true, message: "请确认新密码", trigger: "blur" },
+    { validator: validateConfirmPassword, trigger: "blur" },
+  ],
+};
 
 const formatDate = (dateString) => {
-  if (!dateString) return ''
-  return new Date(dateString).toLocaleString()
-}
+  if (!dateString) return "";
+  return new Date(dateString).toLocaleString();
+};
 
 const loadProfile = () => {
-  const user = userStore.userInfo
+  const user = userStore.userInfo;
   if (user) {
-    Object.assign(profileForm, user)
-    Object.assign(originalProfile, user)
+    Object.assign(profileForm, user);
+    Object.assign(originalProfile, user);
   }
-}
+};
 
 const startEdit = () => {
-  isEditing.value = true
-}
+  isEditing.value = true;
+};
 
 const cancelEdit = () => {
-  isEditing.value = false
-  Object.assign(profileForm, originalProfile)
-}
+  isEditing.value = false;
+  Object.assign(profileForm, originalProfile);
+};
 
 const saveProfile = async () => {
-  if (!profileFormRef.value) return
+  if (!profileFormRef.value) return;
 
-  const valid = await profileFormRef.value.validate().catch(() => false)
-  if (!valid) return
+  const valid = await profileFormRef.value.validate().catch(() => false);
+  if (!valid) return;
 
-  loading.value = true
+  loading.value = true;
 
   try {
     const updateData = {
       nickname: profileForm.nickname,
-      avatar: profileForm.avatar
-    }
+      avatar: profileForm.avatar,
+    };
 
-    await updateUser(userStore.userInfo.id, updateData)
-    userStore.updateUserInfo(updateData)
-    Object.assign(originalProfile, profileForm)
-    isEditing.value = false
-    ElMessage.success('个人信息更新成功')
+    await updateUser(userStore.userInfo.id, updateData);
+    userStore.updateUserInfo(updateData);
+    Object.assign(originalProfile, profileForm);
+    isEditing.value = false;
+    ElMessage.success("个人信息更新成功");
   } catch (error) {
-    console.error('更新个人信息失败:', error)
+    console.error("更新个人信息失败:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 
 const changePassword = async () => {
-  if (!passwordFormRef.value) return
+  if (!passwordFormRef.value) return;
 
-  const valid = await passwordFormRef.value.validate().catch(() => false)
-  if (!valid) return
+  const valid = await passwordFormRef.value.validate().catch(() => false);
+  if (!valid) return;
 
-  passwordLoading.value = true
+  passwordLoading.value = true;
 
   try {
     await updatePassword(userStore.userInfo.id, {
       oldPassword: passwordForm.oldPassword,
-      newPassword: passwordForm.newPassword
-    })
+      newPassword: passwordForm.newPassword,
+    });
 
     // 重置表单
-    passwordForm.oldPassword = ''
-    passwordForm.newPassword = ''
-    passwordForm.confirmPassword = ''
-    passwordFormRef.value.resetFields()
+    passwordForm.oldPassword = "";
+    passwordForm.newPassword = "";
+    passwordForm.confirmPassword = "";
+    passwordFormRef.value.resetFields();
 
-    ElMessage.success('密码修改成功')
+    ElMessage.success("密码修改成功");
   } catch (error) {
-    console.error('修改密码失败:', error)
+    console.error("修改密码失败:", error);
   } finally {
-    passwordLoading.value = false
+    passwordLoading.value = false;
   }
-}
+};
 
 onMounted(() => {
-  loadProfile()
-})
+  loadProfile();
+});
 </script>
 
 <style scoped>

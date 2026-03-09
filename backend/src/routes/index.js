@@ -6,12 +6,18 @@ const authRoutes = require('./auth');
 const userRoutes = require('./users');
 const categoryRoutes = require('./categories');
 const productRoutes = require('./products');
+const cartRoutes = require('./cart');
+const orderRoutes = require('./orders');
+const dashboardRoutes = require('./dashboard');
 
 // 注册路由
 router.use('/auth', authRoutes);
 router.use('/users', userRoutes);
 router.use('/categories', categoryRoutes);
 router.use('/products', productRoutes);
+router.use('/cart', cartRoutes);
+router.use('/orders', orderRoutes);
+router.use('/dashboard', dashboardRoutes);
 
 // 健康检查接口
 router.get('/health', (req, res) => {

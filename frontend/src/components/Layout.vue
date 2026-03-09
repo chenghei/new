@@ -3,16 +3,17 @@
     <!-- 头部导航 -->
     <el-header class="layout-header">
       <div class="header-left">
-        <h1 class="logo">一个有特色的商城</h1>
+        <h1 class="logo">商城</h1>
       </div>
       <div class="header-right">
         <el-space>
-          <span class="welcome-text">欢迎，{{ userStore.userInfo?.nickname || userStore.userInfo?.username }}</span>
+          <span class="welcome-text"
+            >欢迎，{{
+              userStore.userInfo?.nickname || userStore.userInfo?.username
+            }}</span
+          >
           <el-dropdown @command="handleCommand">
-            <el-avatar
-              :src="userStore.userInfo?.avatar"
-              :size="32"
-            >
+            <el-avatar :src="userStore.userInfo?.avatar" :size="32">
               <el-icon><User /></el-icon>
             </el-avatar>
             <template #dropdown>
@@ -35,12 +36,8 @@
     <el-container>
       <!-- 侧边导航 -->
       <el-aside width="200px" class="layout-aside">
-        <el-menu
-          :default-active="$route.path"
-          class="side-menu"
-          router
-        >
-          <el-menu-item index="/dashboard">
+        <el-menu :default-active="$route.path" class="side-menu" router>
+          <el-menu-item index="/dashboard" v-if="userStore.isAdmin">
             <el-icon><Odometer /></el-icon>
             <span>仪表板</span>
           </el-menu-item>
@@ -56,9 +53,24 @@
             <el-icon><Menu /></el-icon>
             <span>分类管理</span>
           </el-menu-item>
-          <el-menu-item v-if="userStore.isAdmin || userStore.user?.role === 'merchant'" index="/products">
-          <el-icon><Goods /></el-icon>
-          <span>商品管理</span>
+          <el-menu-item
+            v-if="userStore.isAdmin || userStore.user?.role === 'merchant'"
+            index="/products"
+          >
+            <el-icon><Goods /></el-icon>
+            <span>商品管理</span>
+          </el-menu-item>
+          <el-menu-item index="/shop">
+            <el-icon><ShoppingBag /></el-icon>
+            <span>商品列表</span>
+          </el-menu-item>
+          <el-menu-item index="/cart">
+          <el-icon><ShoppingCart /></el-icon>
+          <span>购物车</span>
+        </el-menu-item>
+        <el-menu-item index="/orders">
+          <el-icon><Document /></el-icon>
+          <span>我的订单</span>
         </el-menu-item>
         </el-menu>
       </el-aside>
@@ -74,37 +86,33 @@
 </template>
 
 <script setup>
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/user'
-import { ElMessageBox } from 'element-plus'
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/store/user";
+import { ElMessageBox } from "element-plus";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
 const handleCommand = async (command) => {
   switch (command) {
-    case 'profile':
-      router.push('/profile')
-      break
-    case 'logout':
+    case "profile":
+      router.push("/profile");
+      break;
+    case "logout":
       try {
-        await ElMessageBox.confirm(
-          '确定要退出登录吗？',
-          '提示',
-          {
-            confirmButtonText: '确定',
-            cancelButtonText: '取消',
-            type: 'warning'
-          }
-        )
-        userStore.logout()
-        router.push('/login')
+        await ElMessageBox.confirm("确定要退出登录吗？", "提示", {
+          confirmButtonText: "确定",
+          cancelButtonText: "取消",
+          type: "warning",
+        });
+        userStore.logout();
+        router.push("/login");
       } catch {
         // 用户取消操作
       }
-      break
+      break;
   }
-}
+};
 </script>
 
 <style scoped>

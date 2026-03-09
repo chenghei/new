@@ -143,7 +143,7 @@ const handleRegister = async () => {
   try {
     const { confirmPassword, ...userData } = registerForm
     await userStore.register(userData)
-    router.push('/dashboard')
+    router.push('/shop')
   } catch (error) {
     console.error('注册失败:', error)
   } finally {

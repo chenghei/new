@@ -15,19 +15,21 @@ exports.getProducts = async (req, res) => {
       sortBy = "created_at",
       order = "desc",
       merchant_id,
+      scope = "all", // scope=all 查看所有商品，scope=mine 查看自己的商品
     } = req.query;
     const { user } = req;
 
     // 构建查询条件
     const where = {};
 
-    // 如果用户不是admin，只能看到自己的商品
-    if (user && user.role !== "admin") {
+    // 如果指定了 scope=mine，只查看自己的商品
+    if (scope === "mine" && user) {
       where.user_id = user.id;
     } else if (merchant_id) {
-      // 如果是管理员，并且提供了merchant_id，按商户筛选
+      // 如果提供了 merchant_id，按商户筛选
       where.user_id = merchant_id;
     }
+    // 默认情况下（scope=all），不限制用户ID，查看所有商品
 
     if (category_id) {
       where.category_id = category_id;
@@ -159,7 +161,6 @@ exports.createProduct = async (req, res) => {
     if (user.role === "admin" && reqUserId) {
       // 管理员可以指定商户ID
       const targetUser = await User.findByPk(reqUserId);
-      console.log(targetUser, "targetUser");
       if (!targetUser) {
         return error(res, "指定的商户不存在", 400);
       }
@@ -167,11 +168,11 @@ exports.createProduct = async (req, res) => {
         return error(res, "指定的用户不是商户", 400);
       }
       productUserId = reqUserId;
+    } else if (user.role === "merchant") {
+      // 商户角色自动使用自己的user_id
+      productUserId = user.id;
     } else {
-      if (!reqUserId) {
-        return error(res, "请选择指定商户", 400);
-      }
-      // 商户和普通用户只能创建属于自己的商品
+      // 普通用户创建商品也绑定自己
       productUserId = user.id;
     }
 

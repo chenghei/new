@@ -5,7 +5,7 @@ import { ElMessage } from 'element-plus'
 const routes = [
   {
     path: '/',
-    redirect: '/dashboard'
+    redirect: '/profile'
   },
   {
     path: '/login',
@@ -49,6 +49,24 @@ const routes = [
       component: () => import('@/views/Products.vue'),
       meta: { requiresAuth: true, requiresAdmin: false }
     },
+  {
+    path: '/shop',
+    name: 'Shop',
+    component: () => import('@/views/Shop.vue'),
+    meta: { requiresAuth: true, requiresAdmin: false }
+  },
+  {
+    path: '/cart',
+    name: 'Cart',
+    component: () => import('@/views/Cart.vue'),
+    meta: { requiresAuth: true, requiresAdmin: false }
+  },
+  {
+    path: '/orders',
+    name: 'Orders',
+    component: () => import('@/views/Orders.vue'),
+    meta: { requiresAuth: true, requiresAdmin: false }
+  },
   {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',

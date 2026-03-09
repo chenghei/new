@@ -365,10 +365,14 @@ const loadProducts = async () => {
       order: searchForm.order,
     };
 
-    // 如果是管理员，添加merchant_id参数
-    if (userStore.isAdmin && searchForm.merchant_id) {
+    // 如果不是管理员，只查看自己的商品
+    if (!userStore.isAdmin) {
+      params.scope = 'mine';
+    } else if (searchForm.merchant_id) {
+      // 如果是管理员，并且选择了商户，按商户筛选
       params.merchant_id = searchForm.merchant_id;
     }
+    // 如果是管理员且没有选择商户，不传递 scope 和 merchant_id，查看所有商品
 
     const response = await getProducts(params);
     const { products: productList, pagination: paginationData } = response.data;

@@ -57,47 +57,49 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/store/user'
+import { reactive, ref } from "vue";
+import { useRouter } from "vue-router";
+import { useUserStore } from "@/store/user";
 
-const router = useRouter()
-const userStore = useUserStore()
+const router = useRouter();
+const userStore = useUserStore();
 
-const loginFormRef = ref()
-const loading = ref(false)
+const loginFormRef = ref();
+const loading = ref(false);
 
 const loginForm = reactive({
-  username: '',
-  password: ''
-})
+  username: "",
+  password: "",
+});
 
 const loginRules = {
   username: [
-    { required: true, message: '请输入用户名或邮箱', trigger: 'blur' }
+    { required: true, message: "请输入用户名或邮箱", trigger: "blur" },
   ],
-  password: [
-    { required: true, message: '请输入密码', trigger: 'blur' }
-  ]
-}
+  password: [{ required: true, message: "请输入密码", trigger: "blur" }],
+};
 
 const handleLogin = async () => {
-  if (!loginFormRef.value) return
+  if (!loginFormRef.value) return;
 
-  const valid = await loginFormRef.value.validate().catch(() => false)
-  if (!valid) return
+  const valid = await loginFormRef.value.validate().catch(() => false);
+  if (!valid) return;
 
-  loading.value = true
+  loading.value = true;
 
   try {
-    await userStore.login(loginForm)
-    router.push('/dashboard')
+    const { data } = await userStore.login(loginForm);
+    if (data.user.role === "admin") {
+      router.push("/dashboard");
+    } else {
+      router.push("/shop");
+    }
   } catch (error) {
-    console.error('登录失败:', error)
+    console.error("登录失败:", error);
   } finally {
-    loading.value = false
+    loading.value = false;
   }
-}
+};
 </script>
 
 <style scoped>
