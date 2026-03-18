@@ -3,7 +3,7 @@
     <div class="login-card">
       <div class="login-header">
         <h2>用户登录</h2>
-        <p>欢迎回到全栈开发模板</p>
+        <!-- <p>欢迎回到全栈开发模板</p> -->
       </div>
 
       <el-form

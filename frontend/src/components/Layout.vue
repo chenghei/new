@@ -39,7 +39,7 @@
         <el-menu :default-active="$route.path" class="side-menu" router>
           <el-menu-item index="/dashboard" v-if="userStore.isAdmin">
             <el-icon><Odometer /></el-icon>
-            <span>仪表板</span>
+            <span>商城日志</span>
           </el-menu-item>
           <el-menu-item index="/profile">
             <el-icon><User /></el-icon>
@@ -70,7 +70,7 @@
         </el-menu-item>
         <el-menu-item index="/orders">
           <el-icon><Document /></el-icon>
-          <span>我的订单</span>
+          <span>订单管理</span>
         </el-menu-item>
         </el-menu>
       </el-aside>

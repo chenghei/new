@@ -3,7 +3,7 @@
     <div class="register-card">
       <div class="register-header">
         <h2>用户注册</h2>
-        <p>创建您的全栈开发模板账户</p>
+        <!-- <p>创建您的全栈开发模板账户</p> -->
       </div>
 
       <el-form
