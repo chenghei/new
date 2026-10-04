@@ -3,13 +3,13 @@ const router = express.Router();
 const productController = require("../controllers/productController");
 const upload = require("../utils/upload");
 const { success, error, notFound } = require('../utils/response');
-const { authenticateToken } = require('../middleware/auth');
+const { authenticateToken, optionalAuth } = require('../middleware/auth');
 
-// 获取所有商品（支持分页、分类和名称查询）
-router.get("/", authenticateToken, productController.getProducts);
+// 获取所有商品（公开浏览，登录用户会附带个性化行为记录）
+router.get("/", optionalAuth, productController.getProducts);
 
-// 获取单个商品
-router.get("/:id", authenticateToken, productController.getProductById);
+// 获取单个商品（公开浏览，登录用户自动记录浏览历史）
+router.get("/:id", optionalAuth, productController.getProductById);
 
 // 创建商品
 router.post("/", authenticateToken, productController.createProduct);

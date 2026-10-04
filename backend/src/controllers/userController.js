@@ -6,7 +6,7 @@ const { Op } = require('sequelize');
 // 获取用户列表
 const getUsers = async (req, res) => {
   try {
-    const { page = 1, limit = 10, search = '', role = '' } = req.query;
+    const { page = 1, limit = 10, search = '', role = '', status = '' } = req.query;
     const offset = (page - 1) * limit;
 
     const whereCondition = {};
@@ -23,6 +23,11 @@ const getUsers = async (req, res) => {
     // 角色过滤
     if (role) {
       whereCondition.role = role;
+    }
+
+    // 账号状态过滤
+    if (status) {
+      whereCondition.status = status;
     }
 
     const { count, rows } = await User.findAndCountAll({
@@ -95,6 +100,10 @@ const updateUser = async (req, res) => {
     
     if (req.body.avatar !== undefined) {
       updateData.avatar = req.body.avatar;
+    }
+
+    if (req.body.phone !== undefined) {
+      updateData.phone = req.body.phone;
     }
     
     // 只有管理员可以修改角色
@@ -208,11 +217,58 @@ const toggleUserStatus = async (req, res) => {
   }
 };
 
+// 实名认证（身份认证）
+const verifyIdentity = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { real_name, id_card } = req.body;
+
+    // 只能认证本人
+    if (req.user.id !== parseInt(id)) {
+      return error(res, '只能认证本人账户', 403);
+    }
+
+    if (!real_name || !id_card) {
+      return error(res, '真实姓名和身份证号不能为空', 400);
+    }
+
+    // 校验姓名（2-20个中文字符）
+    if (!/^[一-龥]{2,20}$/.test(real_name)) {
+      return error(res, '请输入正确的真实姓名', 400);
+    }
+
+    // 校验身份证号格式（18位）
+    if (!/^\d{17}[\dXx]$/.test(id_card)) {
+      return error(res, '身份证号格式不正确', 400);
+    }
+
+    const user = await User.findByPk(id);
+    if (!user) {
+      return notFound(res, '用户不存在');
+    }
+
+    await user.update({
+      real_name,
+      id_card,
+      id_verified: true
+    });
+
+    return success(res, {
+      user: user.toSafeJSON()
+    }, '实名认证成功');
+
+  } catch (err) {
+    console.error('实名认证错误:', err);
+    return error(res, '实名认证失败', 500);
+  }
+};
+
 module.exports = {
   getUsers,
   getUserById,
   updateUser,
   updatePassword,
   deleteUser,
-  toggleUserStatus
+  toggleUserStatus,
+  verifyIdentity
 };

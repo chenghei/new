@@ -1,0 +1,146 @@
+/* 登录 / 注册页共用样式 */
+.auth-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 16px;
+  background: linear-gradient(135deg, #fff5f0 0%, #ffe9e0 45%, #fff 100%);
+}
+
+.auth-card {
+  display: flex;
+  width: 100%;
+  max-width: 900px;
+  min-height: 520px;
+  background: #fff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(255, 77, 33, 0.15);
+}
+
+.auth-banner {
+  flex: 1;
+  padding: 44px 40px;
+  color: #fff;
+  background: var(--brand-gradient);
+  display: flex;
+  flex-direction: column;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.brand .logo-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.22);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.banner-text {
+  margin-top: 56px;
+}
+
+.banner-text h1 {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+.banner-text p {
+  margin-top: 12px;
+  font-size: 14px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.banner-points {
+  list-style: none;
+  margin-top: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.banner-points li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.94);
+}
+
+.auth-form {
+  flex: 1;
+  padding: 56px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.auth-form h2 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.auth-form .sub {
+  margin: 8px 0 28px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.submit-btn {
+  width: 100%;
+  height: 46px;
+  font-size: 16px;
+  letter-spacing: 4px;
+  background: var(--brand-gradient);
+  border: none;
+}
+
+.auth-footer {
+  margin-top: 22px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.auth-footer a {
+  color: var(--brand);
+  font-weight: 600;
+}
+
+.back-home {
+  margin-left: auto;
+  font-size: 13px;
+  color: #999;
+  cursor: pointer;
+}
+
+.back-home:hover {
+  color: var(--brand);
+}
+
+@media (max-width: 768px) {
+  .auth-banner {
+    display: none;
+  }
+  .auth-card {
+    max-width: 440px;
+    min-height: auto;
+  }
+}

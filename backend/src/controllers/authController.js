@@ -3,6 +3,8 @@ const { generateToken } = require('../utils/jwt');
 const { success, error } = require('../utils/response');
 const { validate, registerSchema, loginSchema } = require('../utils/validation');
 const { Op } = require('sequelize');
+const jwt = require('jsonwebtoken');
+const { blacklistToken } = require('../config/redis');
 
 // 用户注册
 const register = async (req, res) => {
@@ -111,9 +113,21 @@ const getProfile = async (req, res) => {
   }
 };
 
-// 用户登出（客户端删除token即可）
+// 用户登出：将当前 token 加入 Redis 黑名单，使其在自然过期前立即失效
+// （JWT 无状态，仅靠客户端删除 token 无法真正登出）
 const logout = async (req, res) => {
   try {
+    const authHeader = req.headers['authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    if (token) {
+      const decoded = jwt.decode(token);
+      const ttl = decoded && decoded.exp
+        ? decoded.exp - Math.floor(Date.now() / 1000)
+        : 0;
+      await blacklistToken(token, ttl);
+    }
+
     return success(res, null, '登出成功');
   } catch (err) {
     console.error('登出错误:', err);

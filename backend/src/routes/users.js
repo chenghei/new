@@ -6,7 +6,8 @@ const {
   updateUser,
   updatePassword,
   deleteUser,
-  toggleUserStatus
+  toggleUserStatus,
+  verifyIdentity
 } = require('../controllers/userController');
 const { authenticateToken, requireAdmin } = require('../middleware/auth');
 
@@ -21,6 +22,9 @@ router.put('/:id', authenticateToken, updateUser);
 
 // 更新密码（需要认证，只能修改自己的密码）
 router.put('/:id/password', authenticateToken, updatePassword);
+
+// 实名认证（需要认证，只能认证本人）
+router.put('/:id/identity', authenticateToken, verifyIdentity);
 
 // 删除用户（需要管理员权限）
 router.delete('/:id', authenticateToken, requireAdmin, deleteUser);

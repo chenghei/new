@@ -2,8 +2,9 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 
-// 确保上传目录存在
-const uploadDir = path.join(__dirname, '../../../image');
+// 上传目录：统一保存到 backend/uploads（与本服务对外暴露的 /uploads 静态目录保持一致）
+// 使用绝对路径，避免因启动目录不同导致文件被写到别处、上传后无法访问
+const uploadDir = path.join(__dirname, '../../uploads');
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }

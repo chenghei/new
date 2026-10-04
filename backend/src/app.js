@@ -3,20 +3,54 @@ const cors = require('cors');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
 const { sequelize, testConnection } = require('./config/database');
 const routes = require('./routes');
 
+// 导入所有模型，确保 sequelize.sync 能同步全部数据表
+require('./models/User');
+require('./models/Category');
+require('./models/Product');
+require('./models/Cart');
+require('./models/Order');
+require('./models/Favorite');
+require('./models/Review');
+require('./models/AfterSale');
+require('./models/BrowseHistory');
+require('./models/Shop');
+require('./models/AiLog');
+require('./models/AiConfig');
+require('./models/Address');
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 安全中间件
-app.use(helmet());
+// 安全中间件（允许跨源加载静态资源，便于用户端直接引用 /uploads 图片）
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' }
+}));
 
-// CORS配置
+// CORS配置（同时允许管理端、用户端与商家端）
+const allowedOrigins = [
+  process.env.FRONTEND_URL || 'http://localhost:3000',
+  process.env.MALL_URL || 'http://localhost:3001',
+  process.env.MERCHANT_URL || 'http://localhost:3002',
+  process.env.ADMIN_URL || 'http://localhost:3003',
+  'http://localhost:3000',
+  'http://localhost:3001',
+  'http://localhost:3002',
+  'http://localhost:3003'
+];
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // 允许无 origin 的请求（如 Postman、同源代理）
+    if (!origin || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    return callback(new Error('不允许的跨域来源'));
+  },
   credentials: true
 }));
 
@@ -30,7 +64,7 @@ if (process.env.NODE_ENV === 'development') {
 // 限流中间件
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15分钟
-  max: 100, // 每个IP最多100个请求
+  max: process.env.NODE_ENV === 'development' ? 3000 : 1000,
   message: {
     success: false,
     message: '请求过于频繁，请稍后再试'
@@ -42,8 +76,8 @@ app.use('/api', limiter);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// 静态文件服务
-app.use('/uploads', express.static('uploads'));
+// 静态文件服务：对外暴露本地上传目录（绝对路径，上传的图片通过 /uploads/文件名 访问）
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // API路由
 app.use('/api', routes);
@@ -103,7 +137,10 @@ const startServer = async () => {
     await testConnection();
     
     // 同步数据库模型
-    await sequelize.sync({ alter: true });
+    // 说明：默认不开启 alter。alter:true 会在每次启动时重建唯一索引，
+    //       多次重启会导致索引数量不断累积（MySQL 单表最多 64 个索引）并最终启动失败；
+    //       确需同步表结构变更时，可临时设置环境变量 DB_SYNC_ALTER=true 启动一次。
+    await sequelize.sync(process.env.DB_SYNC_ALTER === 'true' ? { alter: true } : {});
     console.log('数据库模型同步成功');
     
     // 启动服务器

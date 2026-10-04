@@ -15,6 +15,18 @@ router.get('/:id', authenticateToken, orderController.getOrderById);
 // 创建订单
 router.post('/', authenticateToken, orderController.createOrder);
 
+// 批量下单（购物车结算）
+router.post('/batch', authenticateToken, orderController.batchCreateOrders);
+
+// 模拟支付
+router.post('/:id/pay', authenticateToken, orderController.payOrder);
+
+// 确认收货
+router.post('/:id/confirm', authenticateToken, orderController.confirmOrder);
+
+// 取消订单
+router.post('/:id/cancel', authenticateToken, orderController.cancelOrder);
+
 // 更新订单状态
 router.put('/:id', authenticateToken, orderController.updateOrderStatus);
 

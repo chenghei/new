@@ -1,0 +1,50 @@
+{
+  "generatedAt": "2026-10-02T05:00:10.805Z",
+  "productImages": [
+    "product-1.jpg",
+    "product-2.jpg",
+    "product-3.jpg",
+    "product-4.jpg",
+    "product-5.jpg",
+    "product-6.jpg",
+    "product-7.jpg",
+    "product-8.jpg",
+    "product-9.jpg",
+    "product-10.jpg",
+    "product-11.jpg",
+    "product-12.jpg",
+    "product-13.jpg",
+    "product-14.jpg",
+    "product-15.jpg",
+    "product-16.jpg",
+    "product-17.jpg",
+    "product-18.jpg",
+    "product-19.jpg",
+    "product-20.jpg",
+    "product-21.jpg",
+    "product-22.jpg",
+    "product-23.jpg",
+    "product-24.jpg"
+  ],
+  "shopImages": [
+    "shop-2-logo.jpg",
+    "shop-3-logo.jpg",
+    "shop-4-logo.jpg",
+    "shop-5-logo.jpg",
+    "shop-6-logo.jpg",
+    "shop-7-logo.jpg"
+  ],
+  "licenseImages": [
+    "shop-2-license.jpg",
+    "shop-3-license.jpg",
+    "shop-4-license.jpg",
+    "shop-5-license.jpg",
+    "shop-6-license.jpg",
+    "shop-7-license.jpg"
+  ],
+  "bannerImages": [
+    "banner-1.jpg",
+    "banner-2.jpg",
+    "banner-3.jpg"
+  ]
+}

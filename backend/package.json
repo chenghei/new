@@ -6,6 +6,9 @@
   "scripts": {
     "start": "node src/app.js",
     "dev": "nodemon src/app.js",
+    "seed": "node scripts/seed.js",
+    "seed:reset": "node scripts/seed.js --reset",
+    "localize-images": "node scripts/localizeImages.js",
     "test": "jest"
   },
   "keywords": [
@@ -24,6 +27,7 @@
     "express": "^4.18.2",
     "express-rate-limit": "^6.8.1",
     "helmet": "^7.0.0",
+    "ioredis": "^5.11.1",
     "joi": "^17.9.2",
     "jsonwebtoken": "^9.0.2",
     "morgan": "^1.10.0",
